@@ -118,7 +118,7 @@ taxon.1_215<-taxon.1[taxon.1$temp!="215",]
 BAR.testFC<-aov(normd13C~TT, data=taxon.1_215) ##### no diff between any samples p =0.152
 posthoc<-TukeyHSD(x=BAR.testFC, 'TT')
 
-lmBAR<-lm(normd13C~char, data=taxon.1_215) - not significant
+ lmBAR<-lm(normd13C~char, data=taxon.1_215) # not significant
 
 taxon.2<-dataFC[dataFC$Species==unique(dataFC$Species)[2],]
 FT.testFC<-aov(normd13C~TT, data=taxon.2) ##### sig diff p = 0.00719
@@ -483,7 +483,7 @@ text(7.7, 61, "Time", xpd=T)
 # 
 
 #charring %C - working for barley, wheat oat and rye
-
+quartz()
 par(oma=c(1,6,1,2))
 taxon.names <- c("Barley","Wheat","Oat" , "Rye")
 data.sort <- data2[order(data2$Species, data2$temp, data2$time),]
@@ -514,7 +514,7 @@ mtext("% C", side=2, line=2, cex=1)
 
 batch2 <- batch[batch$Species==unique(batch$Species)[2],]
 plot(batch2$pcC, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 60), main=taxon.names[2], ylim=c(30, 90))
-axis(2)
+axis(2, labels=F)
 box()
 
 for (i in 3:4){
@@ -537,12 +537,12 @@ col.list[batch2$temp==300] <- "red"
 plot(batch2$pcC, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 60), main=taxon.names[i], ylim=c(30, 90))
 axis(2, labels=F)
 box()
-abline(h=0)
+
 }
 plot(batch2$pcC, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 60), ylim=c(30, 90), type="n")
 legend(1, 87, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "Uncharred", "4h", "8h", "24h"), pch=c(NA, 22,22,22,22,22,NA, 8,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray", "black","red", NA, NA, "white", "white", "white"), bg="white", xpd=T, pt.cex=c(2, 2,2,2,2,2,1,1,1,1,1))
-text(12.1, 86, "Temperature", xpd=T)
-text(6, 78, "Time", xpd=T)
+text(20, 86, "Temperature", xpd=T)
+text(11, 77, "Time", xpd=T)
 
 #charring d13C
 
@@ -1210,9 +1210,9 @@ text(8, 61, "Time", xpd=T)
 
 
 #charring %N -works
-
+quartz()
 par(oma=c(1,6,1,2))
-taxon.names <- c("Barley",  "BW", "Oat", "Rye")
+taxon.names <- c("Barley",  "Wheat", "Oat", "Rye")
 data.sort <- data2[order(data2$Species, data2$temp, data2$time),]
 batch <- data.sort[data.sort$Species != "NB" & data.sort$Species != "HBA"& data.sort$Species != "PBA", ]
 
@@ -1265,8 +1265,8 @@ box()
 }
 plot(batch2$pcN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 41), ylim=c(0, 6), type="n")
 legend(1, 6, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "Uncharred", "4h", "8h", "24h"), pch=c(NA, 22,22,22,22,22,NA, 8,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray", "black","red", NA, NA, "white", "white", "white"), bg="white", xpd=T, pt.cex=c(2, 2,2,2,2,2,1,1,1,1,1))
-text(12, 5.9, "Temperature", xpd=T)
-text(5.2, 5, "Time", xpd=T)
+text(14, 5.9, "Temperature", xpd=T)
+text(6.5, 5, "Time", xpd=T)
 
 #charring d15N
 
