@@ -45,6 +45,12 @@ t.test(bar$normd15N~bar$TT2)
 t.test(whe$normd13C~whe$TT2)
 t.test(whe$normd15N~whe$TT2)
 
+data2<-data2[data2$ID!="BAR0D",]
+data2<-data2[data2$ID!="BAR0E",]
+data2<-data2[data2$ID!="BAR0F",]
+
+
+
 
 ### Only using rye, oat, BW and HB
 data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley",]
@@ -57,9 +63,6 @@ summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
 ########Carbon versions of all the figures ###############################
 
 ## Compare random slopes and intercetps models to just multiple regression
-data2<-data3[data3$ID!="BAR0D",]
-data2<-data2[data2$ID!="BAR0E",]
-data3<-data2[data2$ID!="BAR0F",]
 
 
 
