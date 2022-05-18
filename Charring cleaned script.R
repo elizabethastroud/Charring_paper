@@ -1,21 +1,21 @@
-data<-read.csv("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/Charringdataclean15.csv")
 library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
+data<-read.csv("Charringdataclean15.csv")
 setwd("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/")
 data2<-data
 
 TT2 <- paste(data2$Species,data2$temp, data2$time, sep= "")
 data2<-data.frame(data2,TT2)
 
-###work out if barley and wheat can be compared
+###work out if barley and wheat can be compared between Nitsch et all and new data
 
-bar_whe<-data2[data2$TT2=="Barley00"|data2$TT2=="Free-T wheat00"|data2$TT2=="BW00"|data2$TT2=="HBH00",]
+bar_whe<-data2[data2$TT2=="Barley00"|data2$TT2=="BW00",]
 bar_whe$normd15N<-as.numeric(bar_whe$normd15N)
 
 bar<-bar_whe[bar_whe$TT2=="Barley00",]
-whe<-bar_whe[bar_whe$TT2=="Free-T wheat00"|bar_whe$TT2=="BW00",]
+whe<-bar_whe[bar_whe$TT2=="BW00",]
 
 boxplot(whe$normd13C~whe$CharrNo)
 t.test(whe$normd13C~whe$CharrNo) #p = 0.227
@@ -27,7 +27,7 @@ t.test(bar$normd13C~bar$CharrNo)# p=0.2965
 boxplot(bar$normd15N~bar$CharrNo)
 t.test(bar$normd15N~bar$CharrNo) # p =0.2848
 
-###### kragen spreadsheet values - all data
+###### Kragten spreadsheet values - all data
 
 mean(data2$d15Nsd, na.rm= TRUE)
 mean(data2$d13Csd, na.rm= TRUE)
@@ -36,20 +36,129 @@ mean(data2$d13Csd, na.rm= TRUE)
 data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley",]
 data3$normd15N<-as.numeric(data3$normd15N)
 data3$d15Nsd<-as.numeric(data3$d15Nsd)
-###### kragen spreadsheet values - just wheat, barely, rye and oat - cant' do yet
+###### Kragten spreadsheet values - just wheat, barely, rye and oat
 mean(data3$d15Nsd, na.rm= TRUE)
 mean(data3$d13Csd, na.rm= TRUE)
 summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
 
+#Szpak values carbon
+library(dplyr)
+library(multiway)
+RawStandards<-read.csv("RawStandards.csv")
+RepCar<-read.csv("RepCar.csv")
+all.standards<- RawStandards %>% 
+  group_by(RunfileC,ID)%>%
+  summarise(Number=n(), d13Cmean=mean(normd13C),  d13Csd=sd(normd13C)) %>%
+  as.data.frame()
 
-########Carbon versions of all the figures ###############################
+all.standards$srm<-(all.standards$Number-1)*(all.standards$d13Csd^2)
+dfsrm<-sum(all.standards$Number)-nrow(all.standards)
+Ssrm<-sqrt(sum(all.standards$srm)/dfsrm)
+
+checkC<-subset(all.standards, all.standards$Standard=="P2"|all.standards$Standard=="SALANINE")
+
+CheckS.1<--28.19#### P2
+CheckS.2<--27.11##### Alanine
+CheckS.1sd<-0.14#### P2
+Check.2sd<-0.124
+
+y="P2" #### change if using different check standards 
+fun1<-function(x,y) if(x==y) {CheckS.1} else {CheckS.2}
+checkC$known<-mapply(fun1, checkC$Standard, y)
+
+y="P2"
+fun1<-function(x,y) if(x==y) {CheckS.1sd} else {CheckS.2sd}
+checkC$knownsd<-mapply(fun1, checkC$Standard, y)
+
+checkC$Diff_measured_known<-checkC$d13Cmean-checkC$known
+
+RMSbias<-sqrt(sumsq(checkC$Diff_measured_known)/nrow(checkC))
+u_cref<-sqrt(sumsq(checkC$knownsd)/nrow(checkC))
+
+x<-list(RMSbias, u_cref)
+u_bias<-sqrt(sumsq(x))
+
+
+RepCar$Sd<-apply(subset(RepCar,select = c("normd13C_DulpA","normd13C_DulpB")),1,sd)
+RepCar$Mean<-apply(subset(RepCar,select = c("normd13C_DulpA","normd13C_DulpB")),1,mean)
+RepCar$Number<-2
+RepCar$RepSsrm<-1*(RepCar$Sd^2)
+dfrep<-sum(RepCar$Number)-nrow(RepCar)
+Srep<-sqrt((sum(RepCar$RepSsrm))/dfrep)
+
+uRw<-sqrt((Ssrm^2)+(Srep^2)/2)
+y<-list(u_bias, uRw)
+Uc<-sqrt(sumsq(y))
+
+#Szpak values Nitrogen
+library(dplyr)
+library(multiway)
+RawStandardsN<-read.csv("RawStandardsN.csv")
+RepNit<-read.csv("RepNit.csv")
+all.standardsN<- RawStandardsN %>% 
+  group_by(RunfileN,ID)%>%
+  summarise(Number=n(), d15Nmean=mean(normd15N),  d15Nsd=sd(normd15N)) %>%
+  as.data.frame()
+
+all.standardsN$srm<-(all.standardsN$Number-1)*(all.standardsN$d15Nsd^2)
+dfsrmN<-sum(all.standardsN$Number)-nrow(all.standardsN)
+SsrmN<-sqrt(sum(all.standardsN$srm)/dfsrmN)
+
+
+checkN<-subset(all.standardsN, all.standardsN$ID=="P2"|all.standardsN$ID=="SALANINE"|all.standardsN$ID=="LEU")
+checkN<-checkN[-18,]# remove P2 from 200827 as used as calibration standard
+CheckS.1<--1.57#### P2
+CheckS.2<--1.57##### Alanine
+CheckS.3<- 6.36###Leucine
+
+y="LEU"
+fun1<-function(x,y) if(x==y) {CheckS.3} else {CheckS.2}         
+checkN$known<-mapply(fun1, checkN$ID,  y)
+
+CheckS.1sd<-0.19#### P2
+CheckS.2sd<-0.21
+CheckS.3sd<-0.14
+
+y="P2"
+
+fun1<-function(x,y) if(x==y) {CheckS.1sd} else {CheckS.2sd}
+
+checkN$knownsd<-mapply(fun1, checkN$ID, y)
+
+checkN$knownsd[checkN$ID=="LEU"]<-CheckS.3sd
+
+checkN$Diff_measured_known<-checkN$d15Nmean-checkN$known
+
+RMSbias<-sqrt(sumsq(checkN$Diff_measured_known)/nrow(checkN))
+u_cref<-sqrt(sumsq(checkN$knownsd)/nrow(checkN))
+
+x<-list(RMSbias, u_cref)
+u_bias<-sqrt(sumsq(x))
+
+RepNit$Sd<-apply(subset(RepNit,select = c("normd15N_DulpA","normd15N_DulpB")),1,sd)
+
+RepNit$Mean<-apply(subset(RepNit,select = c("normd15N_DulpA","normd15N_DulpB")),1,mean)
+
+RepNit$Number<-2
+
+RepNit$RepSsrm<-1*(RepNit$Sd^2)
+dfrep<-sum(RepNit$Number)-nrow(RepNit)
+Srep<-sqrt((sum(RepNit$RepSsrm))/dfrep)
+
+uRw<-sqrt((SsrmN^2)+(Srep^2)/2)
+y<-list(u_bias, uRw)
+Uc<-sqrt(sumsq(y))
+
+
+###########################################################
+#      C versions of all the figures and statistics
+###########################################################
+
  summarycharred<- ddply(data3, c("Species","char"), function(x) c(d15N=mean(x$normd15N), sd=sd(x$normd15N), max=max(x$normd15N), min=min(x$normd15N), d13C=mean(x$normd13C), sd=sd(x$normd13C), max=max(x$normd13C), min=min(x$normd13C)))
 # range -27.9 to -24.9 uncharred and -28.3 to -24.6 charred
 
-# summarycharred<- ddply(data3, c("Species","TT2"), function(x) c(d15N=mean(x$normd15N), sd=sd(x$normd15N), max=max(x$normd15N), min=min(x$normd15N), d13C=mean(x$normd13C), sd=sd(x$normd13C), max=max(x$normd13C), min=min(x$normd13C)))
-
 ######Compare LM for the just charred material for each taxon: reported in table 3
-#####
+
 
 just.charred <- data3[data3$char=="charred",]
 TT <- paste(just.charred$temp, just.charred$time, sep= "")
@@ -108,7 +217,7 @@ summary(lm1)
 #adj R2 0.8716
 #p value <2.2e-16
 
-lm2 <- lm(normd13C ~ char + Species, data=no300data3)### data in paper
+lm2 <- lm(normd13C ~ char + Species, data=no300data3)### data in X paper
 summary(lm2)
 #adj R2 0.8719
 #p value <2.2e-16
@@ -371,53 +480,10 @@ legend(1, 70, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "
 text(12.5, 68.5, "Temperature", xpd=T)
 text(6, 62.5, "Time", xpd=T)
 
-# #charring CN_Crun
-# #library(plotrix)
-# par(oma=c(1,6,1,2))
-# taxon.names <- c("Oat",  "Rye", "Spelt")
-# data.sort <- data2[order(data2$Species, data2$temp, data2$time),]
-# batch <- data.sort[data.sort$Species != "NB" & data.sort$Species != "HBA"& data.sort$Species != "PBA", ]
-# #batch <- data.sort
-# pch.list <- rep(0, length(batch$time))
-# pch.list[batch$time==0] <- 8
-# pch.list[batch$time==4] <- 21
-# pch.list[batch$time==8] <- 22
-# pch.list[batch$time==24] <- 23
-# col.list <- rep(0, length(batch$temp))
-# col.list[batch$temp==0] <- "black"
-# col.list[batch$temp==215] <- "white"
-# col.list[batch$temp==230] <- "lightgray"
-# col.list[batch$temp==245] <- "darkgray"
-# col.list[batch$temp==260] <- "gray45"
-# col.list[batch$temp==300] <- "black"
-# 
-# par(mfrow=c(1,4))
-# par(mar=c(3,0,1,0))
-# batch2 <- batch[batch$Species==unique(batch$Species)[1],]
-# plot(batch2$CN_Crun, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[1], ylim=c(15,60))
-# axis(2)
-# box()
-# #abline(h=0)
-# #abline(h=72.5)
-# mtext("C/N (molar)", side=2, line=2, cex=1)
-# for (i in 2:3){
-# par(mar=c(3,0,1,0))
-# batch2 <- batch[batch$Species==unique(batch$Species)[i],]
-# plot(batch2$CN_Crun, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[i], ylim=c(15,60))
-# axis(2, labels=F)
-# box()
-# abline(h=0)
-# }
-# plot(batch2$CN_Crun, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 41), ylim=c(38, 85), type="n")
-# legend(1, 70, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "Uncharred", "4h", "8h", "24h"), pch=c(NA, 22,22,22,22,22,NA, 8,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray","gray45", "black", NA, NA, "white", "white", "white"), bg="white", xpd=T, pt.cex=c(2, 2,2,2,2,2,1,1,1,1,1))
-# text(11, 69, "Temperature", xpd=T)
-# text(6, 62, "Time", xpd=T)
-# 
 
-#####
-#############################################
-
-########. N  versions of all the figures ###############################
+###########################################################
+#      N  versions of all the figures and statistics
+###########################################################
 library(plyr)
 library(nlme)
 library(beeswarm)
@@ -766,107 +832,6 @@ text(14, 6.1, "Temperature", xpd=T)
 text(6, 5.3, "Time", xpd=T)
 
 dev.off()
-# 
-# 
-# 
-# 
-# par(oma=c(1,6,1,2))
-# taxon.names <- c("Barley", "BW", "Oat", "Rye")
-# data.sort <- data2[order(data2$Species, data2$temp, data2$time),]
-# batch <- data.sort[data.sort$Species != "NB" & data.sort$Species != "HBA"& data.sort$Species != "PBA", ]
-# #batch <- data.sort
-# pch.list <- rep(0, length(batch$time))
-# pch.list[batch$time==0] <- 8
-# pch.list[batch$time==4] <- 21
-# pch.list[batch$time==8] <- 22
-# pch.list[batch$time==24] <- 23
-# col.list <- rep(0, length(batch$temp))
-# col.list[batch$temp==0] <- "black"
-# col.list[batch$temp==215] <- "white"
-# col.list[batch$temp==230] <- "lightgray"
-# col.list[batch$temp==245] <- "darkgray"
-# col.list[batch$temp==260] <- "gray45"
-# col.list[batch$temp==300] <- "black"
-# 
-# par(mfrow=c(1,5))
-# par(mar=c(3,0,1,0))
-# batch2 <- batch[batch$Species==unique(batch$Species)[1],]
-# plot(batch2$normd15Nav, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[1], ylim=c(0,8))
-# axis(2)
-# box()
-# mtext(expression(paste(delta^{15}, "N (\u2030)")), side=2, line=2, cex=1)
-# batch2 <- batch[batch$Species==unique(batch$Species)[2],]
-# plot(batch2$normd15Nav, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[2], ylim=c(0,8))
-# box()
-# for (i in 3:4){
-#   par(mar=c(3,0,1,0))
-#   batch2 <- batch[batch$Species==unique(batch$Species)[i],]
-#   pch.list <- rep(0, length(batch2$time))
-#   pch.list[batch2$time==0] <- 8
-#   pch.list[batch2$time==4] <- 21
-#   pch.list[batch2$time==8] <- 22
-#   pch.list[batch2$time==24] <- 23
-#   col.list <- rep(0, length(batch$temp))
-#   col.list[batch2$temp==0] <- "black"
-#   col.list[batch2$temp==215] <- "white"
-#   col.list[batch2$temp==230] <- "lightgray"
-#   col.list[batch2$temp==245] <- "darkgray"
-#   col.list[batch2$temp==260] <- "gray45"
-#   col.list[batch2$temp==300] <- "black"
-#   
-#   plot(batch2$normd15Nav, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[i], ylim=c(0,8))
-#   axis(2, labels=F)
-#   box()
-#   
-# }
-# plot(batch2$pcC, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 41), ylim=c(38, 85), type="n")
-# legend(1, 70, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "Uncharred", "4h", "8h", "24h"), pch=c(NA, 22,22,22,22,22,NA, 8,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray","gray45", "black", NA, NA, "white", "white", "white"), bg="white", xpd=T, pt.cex=c(2, 2,2,2,2,2,1,1,1,1,1))
-# text(12.5, 68.9, "Temperature", xpd=T)
-# text(6, 62.5, "Time", xpd=T)
-# 
-# 
-
-# #charring new CN ration
-# #library(plotrix)
-# par(oma=c(1,6,1,2))
-# taxon.names <- c("Barley", "BW","Oat", "Rye","Spelt")
-# data.sort <- data2[order(data2$Species, data2$temp, data2$time),]
-# batch <- data.sort[data.sort$Species != "NB" & data.sort$Species != "HBA"& data.sort$Species != "PBA", ]
-# #batch <- data.sort
-# pch.list <- rep(0, length(batch$time))
-# pch.list[batch$time==0] <- 8
-# pch.list[batch$time==4] <- 21
-# pch.list[batch$time==8] <- 22
-# pch.list[batch$time==24] <- 23
-# col.list <- rep(0, length(batch$temp))
-# col.list[batch$temp==0] <- "black"
-# col.list[batch$temp==215] <- "white"
-# col.list[batch$temp==230] <- "lightgray"
-# col.list[batch$temp==245] <- "darkgray"
-# col.list[batch$temp==260] <- "gray45"
-# col.list[batch$temp==300] <- "black"
-# 
-# par(mfrow=c(1,6))
-# par(mar=c(3,0,1,0))
-# batch2 <- batch[batch$Species==unique(batch$Species)[1],]
-# plot(batch2$newCN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[1], ylim=c(5,55))
-# axis(2)
-# box()
-# #abline(h=0)
-# #abline(h=72.5)
-# mtext("C/N (molar)", side=2, line=2, cex=1)
-# for (i in 2:3){
-# par(mar=c(3,0,1,0))
-# batch2 <- batch[batch$Species==unique(batch$Species)[i],]
-# plot(batch2$newCN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 50), main=taxon.names[i], ylim=c(5,55))
-# axis(2, labels=F)
-# box()
-# abline(h=0)
-# }
-# plot(batch2$CN_Crun, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 41), ylim=c(38, 85), type="n")
-# legend(1, 70, c("", "215 ˚C", "230 ˚C", "245 ˚C", "260 ˚C", "300 ˚C" ,"", "Uncharred", "4h", "8h", "24h"), pch=c(NA, 22,22,22,22,22,NA, 8,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray","gray45", "black", NA, NA, "white", "white", "white"), bg="white", xpd=T, pt.cex=c(2, 2,2,2,2,2,1,1,1,1,1))
-# text(11, 69, "Temperature", xpd=T)
-# text(6, 62, "Time", xpd=T
 
 #### Mass loss graphs
 
