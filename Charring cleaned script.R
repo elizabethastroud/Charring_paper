@@ -2,7 +2,7 @@ library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-data<-read.csv("Charringdataclean15.csv")
+data<-read.csv("Dataset_1.csv")
 setwd("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/")
 data2<-data
 
@@ -27,7 +27,7 @@ t.test(bar$normd13C~bar$CharrNo)# p=0.2965
 boxplot(bar$normd15N~bar$CharrNo)
 t.test(bar$normd15N~bar$CharrNo) # p =0.2848
 
-###### Kragten spreadsheet values - all data
+###### Kragten spreadsheet values - all data including spelt
 
 mean(data2$d15Nsd, na.rm= TRUE)
 mean(data2$d13Csd, na.rm= TRUE)
@@ -44,31 +44,31 @@ summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
 #Szpak values carbon
 library(dplyr)
 library(multiway)
-RawStandards<-read.csv("RawStandards.csv")
-RepCar<-read.csv("RepCar.csv")
+RawStandards<-read.csv("Table_1_RawStandards.csv")
+RepCar<-read.csv("Table_2_RepCar_new2.csv")
 all.standards<- RawStandards %>% 
   group_by(RunfileC,ID)%>%
-  summarise(Number=n(), d13Cmean=mean(normd13C),  d13Csd=sd(normd13C)) %>%
+  dplyr::summarise(Number=n(), d13Cmean=mean(normd13C),  d13Csd=sd(normd13C)) %>%
   as.data.frame()
 
 all.standards$srm<-(all.standards$Number-1)*(all.standards$d13Csd^2)
 dfsrm<-sum(all.standards$Number)-nrow(all.standards)
 Ssrm<-sqrt(sum(all.standards$srm)/dfsrm)
 
-checkC<-subset(all.standards, all.standards$Standard=="P2"|all.standards$Standard=="SALANINE")
+checkC<-subset(all.standards, all.standards$ID=="P2"|all.standards$ID=="SALANINE")
 
 CheckS.1<--28.19#### P2
 CheckS.2<--27.11##### Alanine
 CheckS.1sd<-0.14#### P2
-Check.2sd<-0.124
+CheckS.2sd<-0.1246
 
-y="P2" #### change if using different check standards 
+y="P2"
 fun1<-function(x,y) if(x==y) {CheckS.1} else {CheckS.2}
-checkC$known<-mapply(fun1, checkC$Standard, y)
+checkC$known<-mapply(fun1, checkC$ID, y)
 
 y="P2"
 fun1<-function(x,y) if(x==y) {CheckS.1sd} else {CheckS.2sd}
-checkC$knownsd<-mapply(fun1, checkC$Standard, y)
+checkC$knownsd<-mapply(fun1, checkC$ID, y)
 
 checkC$Diff_measured_known<-checkC$d13Cmean-checkC$known
 
@@ -77,7 +77,6 @@ u_cref<-sqrt(sumsq(checkC$knownsd)/nrow(checkC))
 
 x<-list(RMSbias, u_cref)
 u_bias<-sqrt(sumsq(x))
-
 
 RepCar$Sd<-apply(subset(RepCar,select = c("normd13C_DulpA","normd13C_DulpB")),1,sd)
 RepCar$Mean<-apply(subset(RepCar,select = c("normd13C_DulpA","normd13C_DulpB")),1,mean)
@@ -93,11 +92,11 @@ Uc<-sqrt(sumsq(y))
 #Szpak values Nitrogen
 library(dplyr)
 library(multiway)
-RawStandardsN<-read.csv("RawStandardsN.csv")
-RepNit<-read.csv("RepNit.csv")
+RawStandardsN<-read.csv("Table_3_RawStandardsN.csv")
+RepNit<-read.csv("Table_4_RepNit_new.csv")
 all.standardsN<- RawStandardsN %>% 
   group_by(RunfileN,ID)%>%
-  summarise(Number=n(), d15Nmean=mean(normd15N),  d15Nsd=sd(normd15N)) %>%
+  dplyr::summarise(Number=n(), d15Nmean=mean(normd15N),  d15Nsd=sd(normd15N)) %>%
   as.data.frame()
 
 all.standardsN$srm<-(all.standardsN$Number-1)*(all.standardsN$d15Nsd^2)
@@ -129,11 +128,11 @@ checkN$knownsd[checkN$ID=="LEU"]<-CheckS.3sd
 
 checkN$Diff_measured_known<-checkN$d15Nmean-checkN$known
 
-RMSbias<-sqrt(sumsq(checkN$Diff_measured_known)/nrow(checkN))
-u_cref<-sqrt(sumsq(checkN$knownsd)/nrow(checkN))
+RMSbiasN<-sqrt(sumsq(checkN$Diff_measured_known)/nrow(checkN))
+u_crefN<-sqrt(sumsq(checkN$knownsd)/nrow(checkN))
 
-x<-list(RMSbias, u_cref)
-u_bias<-sqrt(sumsq(x))
+xN<-list(RMSbiasN, u_crefN)
+u_biasN<-sqrt(sumsq(xN))
 
 RepNit$Sd<-apply(subset(RepNit,select = c("normd15N_DulpA","normd15N_DulpB")),1,sd)
 
@@ -142,12 +141,12 @@ RepNit$Mean<-apply(subset(RepNit,select = c("normd15N_DulpA","normd15N_DulpB")),
 RepNit$Number<-2
 
 RepNit$RepSsrm<-1*(RepNit$Sd^2)
-dfrep<-sum(RepNit$Number)-nrow(RepNit)
-Srep<-sqrt((sum(RepNit$RepSsrm))/dfrep)
+dfrepN<-sum(RepNit$Number)-nrow(RepNit)
+SrepN<-sqrt((sum(RepNit$RepSsrm))/dfrepN)
 
-uRw<-sqrt((SsrmN^2)+(Srep^2)/2)
-y<-list(u_bias, uRw)
-Uc<-sqrt(sumsq(y))
+uRwN<-sqrt((SsrmN^2)+(SrepN^2)/2)
+yN<-list(u_biasN, uRwN)
+UcN<-sqrt(sumsq(yN))
 
 
 ###########################################################
@@ -167,37 +166,37 @@ just.charred <- data.frame(just.charred, TT)
 # 215- 300 degrees
 charred.lm2 <- lm(normd13C ~ Species + temp + time, data=just.charred) ######### used in paper - significant p value for temp
 summary(charred.lm2)
-#Temp est = 2.903e-03, p = 7.96e-05
-#Time est = 2.533e-03, p = 0.298
+#Temp est = 2.903e-03, p = 7.99e-05 
+#Time est = 2.533e-03, p = 0.298 
 
 # 215-260
 no300<-just.charred[just.charred$temp!="300",]
 no300.lm2 <- lm(normd13C ~ Species + temp + time, data=no300) 
 summary(no300.lm2)
 
-#Temp est = 0.003, p = 0.0363
-#Time est = 0.003, p = 0.2835
+#Temp est = 0.003050, p = 0.0363 
+#Time est = 0.003014, p = 0.2836
 
 #230-300
 no215<-just.charred[just.charred$temp!="215",]
 no215.lm2 <- lm(normd13C ~ Species + temp + time, data=no215) 
 summary(no215.lm2)
-#Temp est = 1.583e-03, p = 0.056
-#Time est =2.268e-03, p = 0.362
+#Temp est = 1.582e-03, p = 0.0561
+#Time est =2.268e-03, p = 0.3617
 
 # 230-260
 no215300<-no215[no215$temp!="300",]
 no215300.lm2 <- lm(normd13C ~ Species + temp + time, data=no215300)
 summary(no215300.lm2)
 
-#Temp est = -0.002242, p = 0.271
-#time est = 0.002822, p =0.328
+#Temp est = -0.002245, p = 0.271
+#time est = 0.002822, p =0.328 
 
 ## Compare random slopes and intercepts models to just multiple regression These are the values reported in table 5
 ###All temperatures 215-300
 lm1 <- lm(normd13C ~ Species, data = data3)
 summary(lm1)
-#adj R2=0.8667
+#adj R2=0.8667 
 #p value <2.2e-16
 
 lm2 <- lm(normd13C ~ char + Species, data=data3)#### and this one for CI - this was are saying predict d13c from charring and species - so species has a direct effect 
@@ -205,42 +204,42 @@ summary(lm2)
 #adj R2 0.8678
 #p value <2.2e-16
 #charred-fresh p = 0.106
-# est(beta) = -0.11705
+# est(beta) = -0.11706, 
 confint(lm2)
-#charred fresh -0.259, 0.025059
+#charred fresh -0.2591692   0.02505099
 
 
 ### without 300 data
 no300data3<-data3[data3$temp!="300",]
 lm1 <- lm(normd13C ~ Species, data = no300data3)
 summary(lm1)
-#adj R2 0.8716
+#adj R2 0.8716  
 #p value <2.2e-16
 
 lm2 <- lm(normd13C ~ char + Species, data=no300data3)### data in X paper
 summary(lm2)
-#adj R2 0.8719
+#adj R2 0.8718
 #p value <2.2e-16
-#charred-fresh p =0.26 
-# est(beta) = -0.0825
+#charred-fresh p =0.26
+# est(beta) = -0.08249,
 confint(lm2)#### and this one for CI
-#charred fresh -0.22656, 0.0616
+#charred fresh -0.2265870   0.06161636
 
 ### without 215 data
 no215data3<-data3[data3$temp!="215",]
 lm1 <- lm(normd13C ~ Species, data = no215data3)
 summary(lm1)
-#adj R2 0.8869
+#adj R2 0.8869 
 #p value <2.2e-16
 
 lm2 <- lm(normd13C ~ char + Species, data=no215data3)### data in paper
 summary(lm2)
-#adj R2 0.8902
+#adj R2 0.8902 
 #p value <2.2e-16
-#charred-fresh p =0.0171
-# est(beta) = -0.157
+#charred-fresh p =0.0171  
+# est(beta) = -0.15708 
 confint(lm2)#### and this one for CI
-#charred- fresh -0.2858, -0.02831935
+#charred- fresh -0.2858252  -0.02833152
 ### without 215 and 300 data
 no215300data3<-no215data3[no215data3$temp!="300",]
 lm1 <- lm(normd13C ~ Species, data = no215300data3)
@@ -252,10 +251,10 @@ lm2 <- lm(normd13C ~ char + Species, data=no215300data3)### data in paper
 summary(lm2)
 #adj R2 0.8953
 #p value <2.2e-16
-#charred-fresh p = 0.0621
-# est(beta) = -0.12451
+#charred-fresh p = 0.062
+# est(beta) = -0.12453
 confint(lm2)
-#charred- fresh -0.255398, 0.0063819
+#charred- fresh-0.2554235   0.006367241
 ##############################
 
 summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
@@ -272,7 +271,7 @@ datan <- data.frame(data3, Ccharoff)
 
 summary3 <- ddply(datan, c("Species", "temp", "time"), function(x) c( d13C=mean(x$normd13C), sd=sd(x$normd13C), pcC=mean(x$pcC), CN=mean(x$CN_Crun), charoff=mean(x$Ccharoff)))
 
-####Figure 1 in paper
+####Figure 1 in Stroud et al 2022 (JAS) paper
 png(filename="FigureC1.png",
     units="cm",
     width=14, 
@@ -301,7 +300,7 @@ col.list[batch$temp==300]<-"red"
 par(mfrow=c(1,5))
 par(mar=c(3,0,1,0))
 batch2 <- batch[batch$Species==unique(batch$Species)[1],]
-plot(batch2$Ccharoff, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, ylim=c(-0.9, 1.25), xlim=c(-1, 50), main=taxon.names[1])
+plot(batch2$Ccharoff, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, ylim=c(-1, 1.25), xlim=c(-1, 50), main=taxon.names[1])
 #legend("topleft", c( "Uncharred","215", "230", "245", "260",  "4h", "8h", "24h"), pch=c(8, 22,22,22,22,21,22,23), col="black", pt.bg=c(NA, "white", "lightgray", "darkgray", "black", "white", "white", "white"), bg="white", pt.cex=c(1.2,2, 2, 2, 2, 1.2,1.2,1.2), cex=1.2, box.lty=0)
 axis(2)
 box()
@@ -359,13 +358,13 @@ dev.off()
 
 ###### 
 # 
-##### charring %C
+##### charring %C - Figure 1 in Stroud et al 2022 (Data in brief)
 
 library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-data<-read.csv("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/Charringdataclean15.csv")
+data<-read.csv("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/Dataset_1.csv")
 
 TT2 <- paste(data$Species,data$temp, data$time, sep= "")
 data2<-data.frame(data,TT2)
@@ -375,7 +374,7 @@ data2<- data2[data2$Species=="BW"|data2$Species=="Barley"|data2$Species=="rye"|d
 
 data2$normd15N<-as.numeric(data2$normd15N)
 data2$d15Nsd<-as.numeric(data2$d15Nsd)
-png(filename="FigureCpercent.png",
+png(filename="Figure1_Cpercent.png",
     units="cm",
     width=14, 
     height=13, 
@@ -482,14 +481,15 @@ text(6, 62.5, "Time", xpd=T)
 
 
 ###########################################################
-#      N  versions of all the figures and statistics
+#      N  versions of all the figures and statistics RERUN THESE
 ###########################################################
 library(plyr)
+library(readr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
 
-# data<-read_csv("Charringdataclean15.csv")
+ data<-read_csv("Dataset_1.csv")
 
 TT2 <- paste(data$Species,data$temp, data$time, sep= "")
 data2<-data.frame(data,TT2)
@@ -511,15 +511,15 @@ just.charred <- data.frame(just.charred, TT)
 charred.lm2 <- lm(normd15N ~ Species + temp + time, data=just.charred) ######### used in paper - significant p value for temp
 summary(charred.lm2)
 
-#temp, est = -0.003747, p value = 0.019514*
-#time, est = 0.013651, p value = 0.011778*
+#temp, est = -0.003747, p value = 0.019514* - new est -0.003646, pvalue= 0.021736
+#time, est = 0.013651, p value = 0.011778* - new est 0.013217, pvalue= 0.013771
 
 # 215-260
 no300<-just.charred[just.charred$temp!="300",]
 no300.lm2 <- lm(normd15N ~ Species + temp + time, data=no300) 
 summary(no300.lm2)
-#temp, est = -0.00997, p value = 0.00152*
-#time, est = 0.01408, p value = 0.0200*
+#temp, est = -0.00997, p value = 0.00152* new- est= -0.009093, p value = 0.003331
+#time, est = 0.01408, p value = 0.0200* new- est 0.013539, pvalue = 0.023423
 
 
 #230-300
@@ -527,95 +527,95 @@ no215<-just.charred[just.charred$temp!="215",]
 no215.lm2 <- lm(normd15N ~ Species + temp + time, data=no215) 
 summary(no215.lm2)
 
-#temp, est =-0.003119 , p value = 0.10878
-#time, est = 0.013017, p value = 0.02719*
+#temp, est =-0.003119 , p value = 0.10878, new - est -0.003133, pvalue = 0.10407
+#time, est = 0.013017, p value = 0.02719*new - est 0.012476, pvalue = 0.03255
 
 # 230-260
 no215300<-no215[no215$temp!="300",]
 no215300.lm2 <- lm(normd15N ~ Species + temp + time, data=no215300)
 summary(no215300.lm2)
-#temp, est = -0.014838, p value = 0.002590*
-#time, est = 0.013379, p value = 0.052131.
+#temp, est = -0.014838, p value = 0.002590* new - est - 0.013507, pvalue = 0.005332*
+#time, est = 0.013379, p value = 0.052131. new - est 0.012658, pvalue = 0.062610.
 
 
 ####Table 6. lm models to calculate charring offset 
 ## 215-300 degrees C
 lm1 <- lm(normd15N ~ Species, data = data3)
 summary(lm1)
-#adj R2 0.8331
-# p value <2.2e-16
+#adj R2 0.8331 - new 0.8373
+# p value <2.2e-16 same
 lm2<-lm(normd15N~char+Species, data= data3)
 summary(lm2)
-#adj R2 0.8359
+#adj R2 0.8359 new = 0.8401
 # p value <2.2e-16
-#est (beta) -0.32549
-# p value charred-fresh 0.0403*
+#est (beta) -0.32549 new = -0.3296     
+# p value charred-fresh 0.0403*  new = 0.036
 confint(lm2)#### and this one for CI
-# -0.6363860, -0.014589
+# -0.6363860, -0.014589 - new =-0.6375082, -0.02179433
 
 ### 215 to 260 degrees C
 no300data3<-data3[data3$temp!="300",]
 lm1 <- lm(normd15N ~ Species, data = no300data3)
 summary(lm1)
-#adj R2 0.8508
+#adj R2 0.8508 - new = 0.8466
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no300data3)### data in paper
 summary(lm2)
-#adj R2 0.8436
+#adj R2 0.8436 - new = 0.8496
 # p value <2.2e-16
-#est (beta) -0.3198
-# p value charred-fresh 0.051.
+#est (beta) -0.3198, new = -0.3255 
+# p value charred-fresh 0.051. - 0.0437*
 confint(lm2)#### and this one for CI
-#-0.6410482, 0.00137829
+#-0.6410482, 0.00137829 - new  -0.6415935 -0.009374647
 
 ### 230-300 degrees C
 no215data3<-data3[data3$temp!="215",]
 lm1 <- lm(normd15N ~ Species, data = no215data3)
 summary(lm1)
-#adj R2 0.8245
+#adj R2 0.8245 - new 0.829
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no215data3)### data in paper
 summary(lm2)
-#adj R2 0.828
+#adj R2 0.828 - new 0.8327
 # p value <2.2e-16
-# est (beta) -0.3151
-# p value = 0.041
+# est (beta) -0.3151 - new = -0.32124 
+# p value = 0.041 - noew 0.0356
 confint(lm2)#### and this one for CI
-# -0.6172327 to -0.01299759
+# -0.6172327 to -0.01299759 - new  -0.6206112 -0.02187711
 ### 230-260 degrees C
 
 no300215data3<-no300data3[no300data3$temp!="215",]
 lm1 <- lm(normd15N ~ Species, data = no300215data3)
 summary(lm1)
-#adj R2 0.8268
+#adj R2 0.8268 - new = 0.8342
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no300215data3)### data in paper
 summary(lm2)
-#adj R2 0.83
+#adj R2 0.83 - new 0.838
 # p value <2.2e-16
-# est (beta) -0.3038
-# p value = 0.0629.
+# est (beta) -0.3038 - new -0.3126 
+# p value = 0.0629. - new 0.0517 . 
 
 confint(lm2)#### and this one for CI
 
-#-0.6241998 to 0.016618
+#-0.6241998 to 0.016618 - new -0.6275229 0.002287464
 
-######Residual standard error table 7
+######Residual standard error table 7 ????? - these have been reverse as to what is taxon 1 etc - need to double cheeck 
 
 dataFC<- data3
 TT <- paste(dataFC$temp, dataFC$time, sep= "")
 dataFC <- data.frame(dataFC, TT)
 taxon.1<-dataFC[dataFC$Species==unique(dataFC$Species)[1],]
-lmBAR<-lm(normd13C~char, data=taxon.1)
-summary(lmBAR)
-#0.2468
-taxon.2<-dataFC[dataFC$Species==unique(dataFC$Species)[2],]
-lmFT<-lm(normd13C~char, data=taxon.2)
+lmFT<-lm(normd13C~char, data=taxon.1)
 summary(lmFT)
-#0.185
+# Residual standard error: 0.185 on 49 degrees of freedom
+taxon.2<-dataFC[dataFC$Species==unique(dataFC$Species)[2],]
+lmBAR<-lm(normd13C~char, data=taxon.2)
+summary(lmBAR)
+# 0.2468
 
 taxon.3<-dataFC[dataFC$Species==unique(dataFC$Species)[3],]
 lmOat<-lm(normd13C~char, data=taxon.3)
@@ -625,20 +625,22 @@ summary(lmOat)
 taxon.4<-dataFC[dataFC$Species==unique(dataFC$Species)[4],]
 lmRye<-lm(normd13C~char, data=taxon.4)
 summary(lmRye)
-#0.3293
-lmBARN<-lm(normd15N~char, data=taxon.1)
-summary(lmBARN)
-#0.4791
-lmFTN<-lm(normd15N~char, data=taxon.2)
+#0.3293 
+
+
+lmFTN<-lm(normd15N~char, data=taxon.1)
 summary(lmFTN)
-#0.4281
+# 0.4285 
+lmBARN<-lm(normd15N~char, data=taxon.2)
+summary(lmBARN)
+#0.4796
 
 lmOatN<-lm(normd15N~char, data=taxon.3)
 summary(lmOatN)
 #0.5293
 lmRyeN<-lm(normd15N~char, data=taxon.4)
 summary(lmRyeN)
-#0.9468
+#0.9291 
 
 ##############################
 
@@ -654,8 +656,8 @@ Ncharoff[data3$Species==unique(data3$Species)[i]] <- offsetted.values}
 data4 <- data.frame(data3, Ncharoff)
 
 summary3 <- ddply(data4, c("Species", "temp", "time"), function(x) c( d15N=mean(x$normd15N), sd=sd(x$normd15N), pcN=mean(x$pcN), CN=mean(x$CN_Crun), charoff=mean(x$Ncharoff)))
-#Figure 2
-png(filename="FigureNcharoffcleannew.png",
+#Figure 2 in Stroud et al 2022 (JAS)
+png(filename="Figure2_Ncharoff_new.png",
     units="cm",
     width=14, 
     height=13, 
@@ -744,7 +746,7 @@ text(8, 62, "Time", xpd=T)
 
 dev.off()
 
-#charring %N
+#charring %N Figure 2 in Stroud et al 2022 (data in brief)
 
 library(plyr)
 library(nlme)
@@ -768,7 +770,7 @@ data2$normd15N<-as.numeric(data2$normd15N)
 data2$d15Nsd<-as.numeric(data2$d15Nsd)
 
 data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley"|data2$Species=="spelt",]
-png(filename="FigureNpercent.png",
+png(filename="Figure2_Npercent.png",
     units="cm",
     width=14, 
     height=13, 
@@ -833,10 +835,10 @@ text(6, 5.3, "Time", xpd=T)
 
 dev.off()
 
-#### Mass loss graphs
+#### Mass loss graphs_ figure 3 in Stroud et al 2022 in data in brief
 
 pcwloss <- read.csv("pcwloss.csv")
-png(filename="percentloss.png",
+png(filename="Figure_3_percentloss.png",
     units="cm",
     width=14, 
     height=13, 
