@@ -272,7 +272,7 @@ datan <- data.frame(data3, Ccharoff)
 summary3 <- ddply(datan, c("Species", "temp", "time"), function(x) c( d13C=mean(x$normd13C), sd=sd(x$normd13C), pcC=mean(x$pcC), CN=mean(x$CN_Crun), charoff=mean(x$Ccharoff)))
 
 ####Figure 1 in Stroud et al 2022 (JAS) paper
-png(filename="FigureC1.png",
+png(filename="Figure1_Ccharoff.png",
     units="cm",
     width=14, 
     height=13, 
@@ -364,7 +364,7 @@ library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-data<-read.csv("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/Dataset_1.csv")
+data<-read.csv("Dataset_1.csv")
 
 TT2 <- paste(data$Species,data$temp, data$time, sep= "")
 data2<-data.frame(data,TT2)
