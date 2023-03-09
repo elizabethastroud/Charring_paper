@@ -3,7 +3,6 @@ library(nlme)
 library(beeswarm)
 library(lm.beta)
 data<-read.csv("Dataset_1.csv")
-setwd("~/OneDrive - Nexus365/Feedsax/Charring results/Charring experiment/Experimental_charring/")
 data2<-data
 
 TT2 <- paste(data2$Species,data2$temp, data2$time, sep= "")
@@ -44,8 +43,8 @@ summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
 #Szpak values carbon
 library(dplyr)
 library(multiway)
-RawStandards<-read.csv("Table_1_RawStandards.csv")
-RepCar<-read.csv("Table_2_RepCar_new2.csv")
+RawStandards<-read.csv("Table_1_RawStandardC.csv")
+RepCar<-read.csv("Table_3_RepCar.csv")
 all.standards<- RawStandards %>% 
   group_by(RunfileC,ID)%>%
   dplyr::summarise(Number=n(), d13Cmean=mean(normd13C),  d13Csd=sd(normd13C)) %>%
@@ -92,8 +91,8 @@ Uc<-sqrt(sumsq(y))
 #Szpak values Nitrogen
 library(dplyr)
 library(multiway)
-RawStandardsN<-read.csv("Table_3_RawStandardsN.csv")
-RepNit<-read.csv("Table_4_RepNit_new.csv")
+RawStandardsN<-read.csv("Table_2_RawStandardsN.csv")
+RepNit<-read.csv("Table_4_RepNit.csv")
 all.standardsN<- RawStandardsN %>% 
   group_by(RunfileN,ID)%>%
   dplyr::summarise(Number=n(), d15Nmean=mean(normd15N),  d15Nsd=sd(normd15N)) %>%
@@ -199,7 +198,7 @@ summary(lm1)
 #adj R2=0.8667 
 #p value <2.2e-16
 
-lm2 <- lm(normd13C ~ char + Species, data=data3)#### and this one for CI - this was are saying predict d13c from charring and species - so species has a direct effect 
+lm2 <- lm(normd13C ~ char + Species, data=data3)
 summary(lm2)
 #adj R2 0.8678
 #p value <2.2e-16
@@ -216,7 +215,7 @@ summary(lm1)
 #adj R2 0.8716  
 #p value <2.2e-16
 
-lm2 <- lm(normd13C ~ char + Species, data=no300data3)### data in X paper
+lm2 <- lm(normd13C ~ char + Species, data=no300data3)### data in  paper
 summary(lm2)
 #adj R2 0.8718
 #p value <2.2e-16
@@ -271,7 +270,7 @@ datan <- data.frame(data3, Ccharoff)
 
 summary3 <- ddply(datan, c("Species", "temp", "time"), function(x) c( d13C=mean(x$normd13C), sd=sd(x$normd13C), pcC=mean(x$pcC), CN=mean(x$CN_Crun), charoff=mean(x$Ccharoff)))
 
-####Figure 1 in Stroud et al 2022 (JAS) paper
+####Figure 1 in Stroud et al 2023 (JAS) paper
 png(filename="Figure1_Ccharoff.png",
     units="cm",
     width=14, 
@@ -358,7 +357,7 @@ dev.off()
 
 ###### 
 # 
-##### charring %C - Figure 1 in Stroud et al 2022 (Data in brief)
+##### charring %C - Figure 1 in Stroud et al 2023 (Data in brief)
 
 library(plyr)
 library(nlme)
@@ -603,7 +602,7 @@ confint(lm2)#### and this one for CI
 
 #-0.6241998 to 0.016618 - new -0.6275229 0.002287464
 
-######Residual standard error table 7 ????? - these have been reverse as to what is taxon 1 etc - need to double cheeck 
+######Residual standard error table 7  
 
 dataFC<- data3
 TT <- paste(dataFC$temp, dataFC$time, sep= "")
@@ -656,7 +655,7 @@ Ncharoff[data3$Species==unique(data3$Species)[i]] <- offsetted.values}
 data4 <- data.frame(data3, Ncharoff)
 
 summary3 <- ddply(data4, c("Species", "temp", "time"), function(x) c( d15N=mean(x$normd15N), sd=sd(x$normd15N), pcN=mean(x$pcN), CN=mean(x$CN_Crun), charoff=mean(x$Ncharoff)))
-#Figure 2 in Stroud et al 2022 (JAS)
+#Figure 2 in Stroud et al 2023 (JAS)
 png(filename="Figure2_Ncharoff_new.png",
     units="cm",
     width=14, 
@@ -746,7 +745,7 @@ text(8, 62, "Time", xpd=T)
 
 dev.off()
 
-#charring %N Figure 2 in Stroud et al 2022 (data in brief)
+#charring %N Figure 2 in Stroud et al 2023 (data in brief)
 
 library(plyr)
 library(nlme)
@@ -835,7 +834,7 @@ text(6, 5.3, "Time", xpd=T)
 
 dev.off()
 
-#### Mass loss graphs_ figure 3 in Stroud et al 2022 in data in brief
+#### Mass loss graphs_ figure 3 in Stroud et al 2023 in data in brief
 
 pcwloss <- read.csv("pcwloss.csv")
 png(filename="Figure_3_percentloss.png",
