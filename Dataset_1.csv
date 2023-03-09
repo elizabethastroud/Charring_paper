@@ -1,4 +1,4 @@
-Taxon,,ID,RunfileC,pcC,normd13C,d13Csd,RunfileN,pcN,normd15N,d15Nsd,Species,time,temp,rep,CharrNo,Freshwt,Charwt,char,pcwtloss,C:N,Duplication
+Taxon,"Author (EAS = Stroud, EK = Nitsch)",ID,RunfileC,pcC,normd13C,d13Csd,RunfileN,pcN,normd15N,d15Nsd,Species,time,temp,rep,CharrNo,Freshwt,Charwt,char,pcwtloss,C:N,Duplication
 Barley,EK,HBH0-0A,131130,40.05687752,-26.28239388,0.055065336,131128,1.541434248,0.16978484,0.178547202,Barley,0,0,A,H0,2.53,2.53,fresh,0,30.31788339,
 Barley,EAS,BAR0A,190402 and 190308,38.25139118,-26.35446794,0.068816365,190405,1.524968031,1.332716234,0.42698354,Barley,0,0,A,16,NA,NA,fresh,0,28.45550329,
 Barley,EK,HBH0-0B,131204,38.35146618,-26.71787454,0.074838697,131128,1.302089933,0.670510993,0.177503573,Barley,0,0,B,H0,2.53,2.53,fresh,0,34.36273954,
