@@ -2,7 +2,8 @@ library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-data<-read.csv("Dataset_1.csv")
+data<-read_excel("Dataset_1.xlsx",  skip = 1)
+colnames(data)<- c("Taxon", "Author", "ID", "RunfileC", "pcC", "normd13C","d13Csd", "RunfileN", "pcN", "normd15N", "d15Nsd", "Species", "time", "temp", "rep", "char", "pcwtloss","C:N", "Duplication")
 data2<-data
 
 TT2 <- paste(data2$Species,data2$temp, data2$time, sep= "")
@@ -10,21 +11,21 @@ data2<-data.frame(data2,TT2)
 
 ###work out if barley and wheat can be compared between Nitsch et all and new data
 
-bar_whe<-data2[data2$TT2=="Barley00"|data2$TT2=="BW00",]
+bar_whe<-data2[data2$TT2=="BAR00"|data2$TT2=="BW00",]
 bar_whe$normd15N<-as.numeric(bar_whe$normd15N)
 
-bar<-bar_whe[bar_whe$TT2=="Barley00",]
+bar<-bar_whe[bar_whe$TT2=="BAR00",]
 whe<-bar_whe[bar_whe$TT2=="BW00",]
 
-boxplot(whe$normd13C~whe$CharrNo)
-t.test(whe$normd13C~whe$CharrNo) #p = 0.227
-boxplot(whe$normd15N~whe$CharrNo)
-t.test(whe$normd15N~whe$CharrNo) #p =0.9178
+boxplot(whe$normd13C~whe$Author)
+t.test(whe$normd13C~whe$Author) #p = 0.227
+boxplot(whe$normd15N~whe$Author)
+t.test(whe$normd15N~whe$Author) #p =0.9178
 
-boxplot(bar$normd13C~bar$CharrNo)
-t.test(bar$normd13C~bar$CharrNo)# p=0.2965
-boxplot(bar$normd15N~bar$CharrNo)
-t.test(bar$normd15N~bar$CharrNo) # p =0.2848
+boxplot(bar$normd13C~bar$Author)
+t.test(bar$normd13C~bar$Author)# p=0.2965
+boxplot(bar$normd15N~bar$Author)
+t.test(bar$normd15N~bar$Author) # p =0.2848
 
 ###### Kragten spreadsheet values - all data including spelt
 
@@ -32,7 +33,7 @@ mean(data2$d15Nsd, na.rm= TRUE)
 mean(data2$d13Csd, na.rm= TRUE)
 
 ### Only using rye, oat, BW and HB
-data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley",]
+data3<- data2[data2$Species=="BW"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="BAR",]
 data3$normd15N<-as.numeric(data3$normd15N)
 data3$d15Nsd<-as.numeric(data3$d15Nsd)
 ###### Kragten spreadsheet values - just wheat, barely, rye and oat
@@ -43,8 +44,10 @@ summary <- data.frame(ddply(data3, c("Species", "temp", "time"), nrow))
 #Szpak values carbon
 library(dplyr)
 library(multiway)
-RawStandards<-read.csv("Table_1_RawStandardC.csv")
-RepCar<-read.csv("Table_3_RepCar.csv")
+RawStandards<-read_excel("Table_1_RawStandardC.xlsx",  skip = 1)
+colnames(RawStandards)<-c("ID", "RunfileC","normd13C")
+RepCar<-read_excel("Table_3_RepCar.xlsx",  skip = 1)
+colnames(RepCar)<-c("ID", "RunfileC","normd13C_DulpA","normd13C_DulpB","Sd", "Mean", "Number", "RepSsrm")
 all.standards<- RawStandards %>% 
   group_by(RunfileC,ID)%>%
   dplyr::summarise(Number=n(), d13Cmean=mean(normd13C),  d13Csd=sd(normd13C)) %>%
@@ -91,8 +94,11 @@ Uc<-sqrt(sumsq(y))
 #Szpak values Nitrogen
 library(dplyr)
 library(multiway)
-RawStandardsN<-read.csv("Table_2_RawStandardsN.csv")
-RepNit<-read.csv("Table_4_RepNit.csv")
+RawStandardsN<-read_excel("Table_2_RawStandardsN.xlsx",  skip = 1)
+RepNit<-read_excel("Table_4_RepNit.xlsx", skip =1)
+colnames(RawStandardsN)<-c("ID", "RunfileN","normd15N")
+colnames(RepNit)<-c("ID", "RunfileN","normd15N_DulpA","normd15N_DulpB","Sd", "Mean", "Number", "RepSsrm")
+
 all.standardsN<- RawStandardsN %>% 
   group_by(RunfileN,ID)%>%
   dplyr::summarise(Number=n(), d15Nmean=mean(normd15N),  d15Nsd=sd(normd15N)) %>%
@@ -316,7 +322,7 @@ box()
 abline(h=0)
 }
 taxon.names <- c( "Oat","Rye")
-batch <- data.sort[data.sort$Species != "Barley" & data.sort$Species != "BW", ]
+batch <- data.sort[data.sort$Species != "BAR" & data.sort$Species != "BW", ]
 pch.list <- rep(0, length(batch$time))
 pch.list[batch$time==0] <- 8
 pch.list[batch$time==4] <- 21
@@ -363,13 +369,13 @@ library(plyr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-data<-read.csv("Dataset_1.csv")
-
+data<-read_excel("Dataset_1.xlsx",  skip = 1)
+colnames(data)<- c("Taxon", "Author", "ID", "RunfileC", "pcC", "normd13C","d13Csd", "RunfileN", "pcN", "normd15N", "d15Nsd", "Species", "time", "temp", "rep", "char", "pcwtloss","C:N", "Duplication")
 TT2 <- paste(data$Species,data$temp, data$time, sep= "")
 data2<-data.frame(data,TT2)
 
 
-data2<- data2[data2$Species=="BW"|data2$Species=="Barley"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="spelt",]
+data2<- data2[data2$Species=="BW"|data2$Species=="BAR"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="spt",]
 
 data2$normd15N<-as.numeric(data2$normd15N)
 data2$d15Nsd<-as.numeric(data2$d15Nsd)
@@ -487,14 +493,14 @@ library(readr)
 library(nlme)
 library(beeswarm)
 library(lm.beta)
-
- data<-read_csv("Dataset_1.csv")
+data<-read_excel("Dataset_1.xlsx",  skip = 1)
+colnames(data)<- c("Taxon", "Author", "ID", "RunfileC", "pcC", "normd13C","d13Csd", "RunfileN", "pcN", "normd15N", "d15Nsd", "Species", "time", "temp", "rep", "char", "pcwtloss","C:N", "Duplication")
 
 TT2 <- paste(data$Species,data$temp, data$time, sep= "")
 data2<-data.frame(data,TT2)
 
-### Only using rye, oat, BW and HB
-data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley",]
+### Only using rye, oat, BW and BAR
+data3<- data2[data2$Species=="BW"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="BAR",]
 data3$normd15N<-as.numeric(data3$normd15N)
 data3$d15Nsd<-as.numeric(data3$d15Nsd)
 
@@ -510,15 +516,15 @@ just.charred <- data.frame(just.charred, TT)
 charred.lm2 <- lm(normd15N ~ Species + temp + time, data=just.charred) ######### used in paper - significant p value for temp
 summary(charred.lm2)
 
-#temp, est = -0.003747, p value = 0.019514* - new est -0.003646, pvalue= 0.021736
-#time, est = 0.013651, p value = 0.011778* - new est 0.013217, pvalue= 0.013771
+#temp,  est -0.003646, pvalue= 0.021736
+#time,  est 0.013217, pvalue= 0.013771
 
 # 215-260
 no300<-just.charred[just.charred$temp!="300",]
 no300.lm2 <- lm(normd15N ~ Species + temp + time, data=no300) 
 summary(no300.lm2)
-#temp, est = -0.00997, p value = 0.00152* new- est= -0.009093, p value = 0.003331
-#time, est = 0.01408, p value = 0.0200* new- est 0.013539, pvalue = 0.023423
+#temp,  est= -0.009093, p value = 0.003331
+#time,  est 0.013539, pvalue = 0.023423
 
 
 #230-300
@@ -526,81 +532,81 @@ no215<-just.charred[just.charred$temp!="215",]
 no215.lm2 <- lm(normd15N ~ Species + temp + time, data=no215) 
 summary(no215.lm2)
 
-#temp, est =-0.003119 , p value = 0.10878, new - est -0.003133, pvalue = 0.10407
-#time, est = 0.013017, p value = 0.02719*new - est 0.012476, pvalue = 0.03255
+#temp, - est -0.003133, pvalue = 0.10407
+#time,  est 0.012476, pvalue = 0.03255
 
 # 230-260
 no215300<-no215[no215$temp!="300",]
 no215300.lm2 <- lm(normd15N ~ Species + temp + time, data=no215300)
 summary(no215300.lm2)
-#temp, est = -0.014838, p value = 0.002590* new - est - 0.013507, pvalue = 0.005332*
-#time, est = 0.013379, p value = 0.052131. new - est 0.012658, pvalue = 0.062610.
+#temp,est - 0.013507, pvalue = 0.005332*
+#time,  est 0.012658, pvalue = 0.062610.
 
 
 ####Table 6. lm models to calculate charring offset 
 ## 215-300 degrees C
 lm1 <- lm(normd15N ~ Species, data = data3)
 summary(lm1)
-#adj R2 0.8331 - new 0.8373
+#adj R2 0.8373
 # p value <2.2e-16 same
 lm2<-lm(normd15N~char+Species, data= data3)
 summary(lm2)
-#adj R2 0.8359 new = 0.8401
+#adj R2  = 0.8401
 # p value <2.2e-16
-#est (beta) -0.32549 new = -0.3296     
-# p value charred-fresh 0.0403*  new = 0.036
+#est (beta) = -0.3296     
+# p value charred-fresh  = 0.036
 confint(lm2)#### and this one for CI
-# -0.6363860, -0.014589 - new =-0.6375082, -0.02179433
+#  -0.6375082, -0.02179433
 
 ### 215 to 260 degrees C
 no300data3<-data3[data3$temp!="300",]
 lm1 <- lm(normd15N ~ Species, data = no300data3)
 summary(lm1)
-#adj R2 0.8508 - new = 0.8466
+#adj R2  = 0.8466
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no300data3)### data in paper
 summary(lm2)
-#adj R2 0.8436 - new = 0.8496
+#adj R2 0.8496
 # p value <2.2e-16
-#est (beta) -0.3198, new = -0.3255 
-# p value charred-fresh 0.051. - 0.0437*
+#est (beta) -0.3255 
+# p value charred-fresh  0.0437*
 confint(lm2)#### and this one for CI
-#-0.6410482, 0.00137829 - new  -0.6415935 -0.009374647
+#-0.6415935 -0.009374647
 
 ### 230-300 degrees C
 no215data3<-data3[data3$temp!="215",]
 lm1 <- lm(normd15N ~ Species, data = no215data3)
 summary(lm1)
-#adj R2 0.8245 - new 0.829
+#adj R2 0.829
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no215data3)### data in paper
 summary(lm2)
-#adj R2 0.828 - new 0.8327
+#adj R2 0.8327
 # p value <2.2e-16
-# est (beta) -0.3151 - new = -0.32124 
-# p value = 0.041 - noew 0.0356
+# est (beta) -0.32124 
+# p value =  0.0356
 confint(lm2)#### and this one for CI
-# -0.6172327 to -0.01299759 - new  -0.6206112 -0.02187711
+#-0.6206112 -0.02187711
 ### 230-260 degrees C
 
 no300215data3<-no300data3[no300data3$temp!="215",]
 lm1 <- lm(normd15N ~ Species, data = no300215data3)
 summary(lm1)
-#adj R2 0.8268 - new = 0.8342
+#adj R2 0.8342
 # p value <2.2e-16
 
 lm2 <- lm(normd15N ~ char + Species, data=no300215data3)### data in paper
 summary(lm2)
-#adj R2 0.83 - new 0.838
+#adj R20.838
 # p value <2.2e-16
-# est (beta) -0.3038 - new -0.3126 
-# p value = 0.0629. - new 0.0517 . 
+# est (beta)  -0.3126 
+# p value =  0.0517 . 
 
 confint(lm2)#### and this one for CI
 
-#-0.6241998 to 0.016618 - new -0.6275229 0.002287464
+# -0.6275229 0.002287464
 
 ######Residual standard error table 7  
 
@@ -608,13 +614,13 @@ dataFC<- data3
 TT <- paste(dataFC$temp, dataFC$time, sep= "")
 dataFC <- data.frame(dataFC, TT)
 taxon.1<-dataFC[dataFC$Species==unique(dataFC$Species)[1],]
-lmFT<-lm(normd13C~char, data=taxon.1)
-summary(lmFT)
-# Residual standard error: 0.185 on 49 degrees of freedom
-taxon.2<-dataFC[dataFC$Species==unique(dataFC$Species)[2],]
-lmBAR<-lm(normd13C~char, data=taxon.2)
+lmBAR<-lm(normd13C~char, data=taxon.1)
 summary(lmBAR)
-# 0.2468
+# Residual standard error: 0.2468 on 49 degrees of freedom
+taxon.2<-dataFC[dataFC$Species==unique(dataFC$Species)[2],]
+lmFT<-lm(normd13C~char, data=taxon.2)
+summary(lmFT)
+# 0.185
 
 taxon.3<-dataFC[dataFC$Species==unique(dataFC$Species)[3],]
 lmOat<-lm(normd13C~char, data=taxon.3)
@@ -703,7 +709,7 @@ abline(h=0)
 
 
 taxon.names <- c( "Oat","Rye")
-batch <- data.sort[data.sort$Species != "Barley" & data.sort$Species != "BW", ]
+batch <- data.sort[data.sort$Species != "BAR" & data.sort$Species != "BW", ]
 pch.list <- rep(0, length(batch$time))
 pch.list[batch$time==0] <- 8
 pch.list[batch$time==4] <- 21
@@ -754,21 +760,16 @@ library(lm.beta)
 
 data2<-data
 
-data2$Species<-droplevels(data2$Species)
 
 TT2 <- paste(data$Species,data2$temp, data2$time, sep= "")
 data2<-data.frame(data2,TT2)
 
-### Only using rye, oat, BW and HB
-
-data2$Species<-gsub('Free-T wheat','BW',data2$Species)
-
-data2$Species<-gsub('HBH','Barley',data2$Species)
+### Only using rye, oat, BW and BAR Spt
 
 data2$normd15N<-as.numeric(data2$normd15N)
 data2$d15Nsd<-as.numeric(data2$d15Nsd)
 
-data3<- data2[data2$Species=="BW"|data2$Species=="HBH"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="Free-T wheat"|data2$Species=="Barley"|data2$Species=="spelt",]
+data3<- data2[data2$Species=="BW"|data2$Species=="rye"|data2$Species=="oat"|data2$Species=="BAR"|data2$Species=="spt",]
 png(filename="Figure2_Npercent.png",
     units="cm",
     width=14, 
@@ -796,8 +797,8 @@ col.list[batch$temp==300] <- "red"
 
 par(mfrow=c(1,6))
 par(mar=c(3,0,1,0))
-batch2 <- batch[batch$Species==unique(batch$Species)[1],]
-plot(batch2$pcN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 55), main=taxon.names[1], ylim=c(0, 6))
+batch1 <- batch[batch$Species==unique(batch$Species)[1],]
+plot(batch1$pcN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 55), main=taxon.names[1], ylim=c(0, 6))
 axis(2)
 box()
 mtext("% N", side=2, line=2, cex=1)
@@ -805,7 +806,7 @@ batch2 <- batch[batch$Species==unique(batch$Species)[2],]
 plot(batch2$pcN, bg=c(col.list), pch=c(pch.list), ylab="", axes=F, xlab="", cex=1.5, xlim=c(-1, 55), main=taxon.names[2], ylim=c(0, 6))
 box()
 
-batch3 <- data.sort[data.sort$Species != "Barley" & data.sort$Species != "BW", ]
+batch3 <- data.sort[data.sort$Species != "BAR" & data.sort$Species != "BW", ]
 pch.list <- rep(0, length(batch3$time))
 pch.list[batch3$time==0] <- 8
 pch.list[batch3$time==4] <- 21
@@ -836,7 +837,8 @@ dev.off()
 
 #### Mass loss graphs_ figure 3 in Stroud et al 2023 in data in brief
 
-pcwloss <- read.csv("pcwloss.csv")
+pcwloss <- read_xlsx("Table_6_pcwloss.xlsx", skip=1)
+colnames(pcwloss)<-c("ID", "Species", "time", "temp", "pcwtloss", "Freshwt", "Charwt")
 png(filename="Figure_3_percentloss.png",
     units="cm",
     width=14, 
